@@ -1,7 +1,7 @@
 {
-  "name": "storage-plugin-seed",
-  "description": "Storage Plugin seed project for the Reekoh IoT Platform. Helps engineers to start developing storage plugins for the Reekoh IoT Platform.",
-  "version": "1.0.1",
+  "name": "google-cloud-datastore-storage",
+  "description": "Google cloud Datastore Storage Plugin for the Reekoh IoT Platform. Integrates a Reekoh instance with a Google cloud Datastore database to store device data.",
+  "version": "1.0.0",
   "author": "Reekoh, Inc.",
   "main": "app.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Reekoh/storage-plugin-seed"
+    "url": "https://github.com/mauricio-roderick/google-cloud-datastore-storage"
   },
   "dependencies": {
     "async": "^2.0.0-rc.6",
