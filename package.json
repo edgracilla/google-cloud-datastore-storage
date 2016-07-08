@@ -1,6 +1,6 @@
 {
   "name": "google-cloud-datastore-storage",
-  "description": "Google cloud Datastore Storage Plugin for the Reekoh IoT Platform. Integrates a Reekoh instance with a Google cloud Datastore database to store device data.",
+  "description": "Google Cloud Datastore Storage Plugin for the Reekoh IoT Platform. Integrates a Reekoh instance with a Google Cloud Datastore database to store device data.",
   "version": "1.0.0",
   "author": "Reekoh, Inc.",
   "main": "app.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mauricio-roderick/google-cloud-datastore-storage"
+    "url": "https://github.com/Reekoh/tcp-gateway/blob/master/app.js"
   },
   "dependencies": {
     "async": "^2.0.0-rc.6",
