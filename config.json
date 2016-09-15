@@ -3,19 +3,19 @@
 	"label": "Project Id",
 	"type": "String",
 	"required": true,
-	"help": "The project ID from the Google Developer's Console. E.g. 'purple-grape-123'."
+	"help": "The project ID from the Google Developer's Console e.g. 'purple-grape-123'."
   },
   "client_email": {
-	"label": "client_email",
+	"label": "Email",
 	"type": "String",
 	"required": true,
-	"help": ""
+	"help": "The Client Email to use for authentication."
   },
   "private_key": {
-	"label": "private_key",
-	"type": "String",
+	"label": "Private Key",
+	"type": "Password",
 	"required": true,
-	"help": ""
+	"help": "The Private Key to use for authentication."
   },
   "key": {
 	"label": "Key",
