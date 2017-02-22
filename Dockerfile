@@ -10,7 +10,7 @@ RUN npm install
 
 # setting need environment variables
 ENV INPUT_PIPE="demo.storage" \
-		CONFIG="{}" \
+    CONFIG="{}" \
     LOGGERS="" \
     EXCEPTION_LOGGERS="" \
     BROKER="amqp://guest:guest@172.17.0.2/"

@@ -1,25 +1,17 @@
 'use strict'
 
-const reekoh = require('demo-reekoh-node')
+const reekoh = require('reekoh')
 const _plugin = new reekoh.plugins.Storage()
 
-const isArray = Array.isArray
 const async = require('async')
 const gcloud = require('google-cloud')
 const isPlainObject = require('lodash.isplainobject')
 
-let connection = {}
-
-let _options = {
-  key: process.env.GCDS_KEY,
-  project_id: process.env.GCDS_PROJECT_ID,
-  client_email: process.env.GCDS_CLIENT_EMAIL,
-  private_key: process.env.GCDS_PRIVATE_KEY
-}
+let connection = null
 
 let saveData = (entity, done) => {
   connection.save({
-    key: _options.key,
+    key: _plugin.config.key,
     data: entity
   }, (err) => {
     if (!err) {
@@ -39,7 +31,7 @@ _plugin.on('data', (data) => {
       if (err) return _plugin.logException(err)
       process.send({ type: 'processed' })
     })
-  } else if (isArray(data)) {
+  } else if (Array.isArray(data)) {
     async.each(data, (datum, done) => {
       saveData(datum, done)
     }, (err) => {
@@ -64,16 +56,15 @@ _plugin.once('ready', () => {
   })
 
   d.run(() => {
-
     connection = gcloud.datastore({
-      projectId: _options.project_id,
+      projectId: _plugin.config.project_id,
       credentials: {
-        client_email: _options.client_email,
-        private_key: _options.private_key
+        client_email: _plugin.config.client_email,
+        private_key: _plugin.config.private_key
       }
     })
 
-    _options.key = connection.key(_options.key)
+    _plugin.config.key = connection.key(_plugin.config.key)
     _plugin.log('Google Cloud Datastore storage has been initialized.')
     process.send({ type: 'ready' })
   })

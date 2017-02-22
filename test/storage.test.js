@@ -2,6 +2,14 @@
 
 'use strict'
 
+const amqp = require('amqplib')
+const should = require('should')
+const cp = require('child_process')
+const gcloud = require('google-cloud')
+
+const INPUT_PIPE = 'demo.pipe.storage'
+const BROKER = 'amqp://guest:guest@127.0.0.1/'
+
 const KEY = 'Plugin'
 const GCDS_CONFIG = {
   projectId: 'reekoh-plugins',
@@ -11,59 +19,54 @@ const GCDS_CONFIG = {
   }
 }
 
-const amqp = require('amqplib')
-const should = require('should')
-const cp = require('child_process')
-const gcloud = require('google-cloud')
-
 let d = new Date()
 let gcds = gcloud.datastore(GCDS_CONFIG)
 
 let _channel = null
-let _storage = null
+let _app = null
 let _conn = null
 
 let _entity = {
   '_id': d.valueOf(),
   'created_by': 'Reekoh',
-  'plugin_name': 'Google Cloud Datastore',
-
+  'plugin_name': 'Google Cloud Datastore'
 }
 
 describe('Storage', function () {
   this.slow(5000)
 
   before('init', () => {
-    process.env.INPUT_PIPE = 'demo.pipe.storage'
-    process.env.BROKER = 'amqp://guest:guest@127.0.0.1/'
+    let conf = {
+      key: KEY,
+      project_id: GCDS_CONFIG.projectId,
+      client_email: GCDS_CONFIG.credentials.client_email,
+      private_key: GCDS_CONFIG.credentials.private_key
+    }
 
-    process.env.GCDS_KEY = KEY
-    process.env.GCDS_PROJECT_ID = GCDS_CONFIG.projectId
-    process.env.GCDS_CLIENT_EMAIL = GCDS_CONFIG.credentials.client_email
-    process.env.GCDS_PRIVATE_KEY = GCDS_CONFIG.credentials.private_key
+    process.env.BROKER = BROKER
+    process.env.INPUT_PIPE = INPUT_PIPE
+    process.env.CONFIG = JSON.stringify(conf)
 
-    amqp.connect(process.env.BROKER)
-      .then((conn) => {
-        _conn = conn
-        return conn.createChannel()
-      }).then((channel) => {
-        _channel = channel
-      }).catch((err) => {
-        console.log(err)
-      })
-
+    amqp.connect(BROKER).then((conn) => {
+      _conn = conn
+      return conn.createChannel()
+    }).then((channel) => {
+      _channel = channel
+    }).catch((err) => {
+      console.log(err)
+    })
   })
 
   after('terminate child process', function () {
     _conn.close()
     setTimeout(() => {
-      _storage.kill('SIGKILL')
+      _app.kill('SIGKILL')
     }, 3000)
   })
 
   describe('#spawn', function () {
     it('should spawn a child process', function () {
-      should.ok(_storage = cp.fork(process.cwd()), 'Child process not spawned.')
+      should.ok(_app = cp.fork(process.cwd()), 'Child process not spawned.')
     })
   })
 
@@ -71,7 +74,7 @@ describe('Storage', function () {
     it('should notify the parent process when ready within 8 seconds', function (done) {
       this.timeout(8000)
 
-      _storage.on('message', function (message) {
+      _app.on('message', function (message) {
         if (message.type === 'ready') {
           done()
         }
@@ -80,12 +83,11 @@ describe('Storage', function () {
   })
 
   describe('#data', function () {
-    
     it('should process the data', function (done) {
       this.timeout(8000)
       _channel.sendToQueue(process.env.INPUT_PIPE, new Buffer(JSON.stringify(_entity)))
 
-      _storage.on('message', (msg) => {
+      _app.on('message', (msg) => {
         if (msg.type === 'processed') { done() }
       })
     })
@@ -93,11 +95,10 @@ describe('Storage', function () {
     it('should should verify that the file was inserted', function (done) {
       this.timeout(10000)
 
-      let q = gcds.createQuery(process.env.GCDS_KEY)
+      let q = gcds.createQuery(KEY)
         .filter('_id', _entity._id)
 
       gcds.runQuery(q, function (err, entities, nextQuery) {
-
         should.ifError(err)
         should.equal(1, entities.length)
 
