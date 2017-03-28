@@ -1,7 +1,7 @@
 'use strict'
 
 const reekoh = require('reekoh')
-const _plugin = new reekoh.plugins.Storage()
+const plugin = new reekoh.plugins.Storage()
 
 const async = require('async')
 const gcloud = require('google-cloud')
@@ -11,11 +11,11 @@ let connection = null
 
 let saveData = (entity, done) => {
   connection.save({
-    key: _plugin.config.key,
+    key: plugin.config.key,
     data: entity
   }, (err) => {
     if (!err) {
-      _plugin.log(JSON.stringify({
+      plugin.log(JSON.stringify({
         title: 'Entity successfuly saved to Google Cloud Datastore',
         entity: entity
       }))
@@ -25,29 +25,29 @@ let saveData = (entity, done) => {
   })
 }
 
-_plugin.on('data', (data) => {
+plugin.on('data', (data) => {
   if (isPlainObject(data)) {
     saveData(data, (err) => {
-      if (err) return _plugin.logException(err)
-      process.send({ type: 'processed' })
+      if (err) return plugin.logException(err)
+      plugin.emit('processed')
     })
   } else if (Array.isArray(data)) {
     async.each(data, (datum, done) => {
       saveData(datum, done)
     }, (err) => {
-      if (err) return _plugin.logException(err)
-      process.send({ type: 'processed' })
+      if (err) return plugin.logException(err)
+      plugin.emit('processed')
     })
   } else {
-    _plugin.logException(new Error(`Invalid data received. Data must be a valid Array/JSON Object or a collection of objects. Data: ${data}`))
+    plugin.logException(new Error(`Invalid data received. Data must be a valid Array/JSON Object or a collection of objects. Data: ${data}`))
   }
 })
 
-_plugin.once('ready', () => {
+plugin.once('ready', () => {
   let d = require('domain').create()
 
   d.once('error', (error) => {
-    _plugin.logException(error)
+    plugin.logException(error)
     d.exit()
 
     setTimeout(() => {
@@ -57,15 +57,18 @@ _plugin.once('ready', () => {
 
   d.run(() => {
     connection = gcloud.datastore({
-      projectId: _plugin.config.project_id,
+      projectId: plugin.config.project_id,
       credentials: {
-        client_email: _plugin.config.client_email,
-        private_key: _plugin.config.private_key
+        client_email: plugin.config.client_email,
+        private_key: plugin.config.private_key
       }
     })
 
-    _plugin.config.key = connection.key(_plugin.config.key)
-    _plugin.log('Google Cloud Datastore storage has been initialized.')
-    process.send({ type: 'ready' })
+    plugin.config.key = connection.key(plugin.config.key)
+    plugin.log('Google Cloud Datastore storage has been initialized.')
+    plugin.emit('init')
   })
 })
+
+module.exports = plugin
+

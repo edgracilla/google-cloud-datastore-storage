@@ -4,7 +4,6 @@
 
 const amqp = require('amqplib')
 const should = require('should')
-const cp = require('child_process')
 const gcloud = require('google-cloud')
 
 const INPUT_PIPE = 'demo.pipe.storage'
@@ -33,7 +32,6 @@ let _entity = {
 }
 
 describe('Storage', function () {
-  this.slow(5000)
 
   before('init', () => {
     let conf = {
@@ -57,46 +55,29 @@ describe('Storage', function () {
     })
   })
 
-  after('terminate child process', function () {
+  after('terminate', function () {
     _conn.close()
-    setTimeout(() => {
-      _app.kill('SIGKILL')
-    }, 3000)
   })
 
-  describe('#spawn', function () {
-    it('should spawn a child process', function () {
-      should.ok(_app = cp.fork(process.cwd()), 'Child process not spawned.')
-    })
-  })
-
-  describe('#handShake', function () {
-    it('should notify the parent process when ready within 8 seconds', function (done) {
-      this.timeout(8000)
-
-      _app.on('message', function (message) {
-        if (message.type === 'ready') {
-          done()
-        }
-      })
+  describe('#start', function () {
+    it('should start the app', function (done) {
+      this.timeout(10000)
+      _app = require('../app')
+      _app.once('init', done)
     })
   })
 
   describe('#data', function () {
     it('should process the data', function (done) {
       this.timeout(8000)
-      _channel.sendToQueue(process.env.INPUT_PIPE, new Buffer(JSON.stringify(_entity)))
-
-      _app.on('message', (msg) => {
-        if (msg.type === 'processed') { done() }
-      })
+      _channel.sendToQueue(INPUT_PIPE, new Buffer(JSON.stringify(_entity)))
+      _app.on('processed', done)
     })
 
     it('should should verify that the file was inserted', function (done) {
       this.timeout(10000)
 
-      let q = gcds.createQuery(KEY)
-        .filter('_id', _entity._id)
+      let q = gcds.createQuery(KEY).filter('_id', _entity._id)
 
       gcds.runQuery(q, function (err, entities, nextQuery) {
         should.ifError(err)
