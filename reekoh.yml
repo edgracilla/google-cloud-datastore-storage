@@ -3,7 +3,6 @@ kind: Plugin
 metadata:
   name: Google Cloud Datastore Storage
   description: Google Cloud Datastore Storage Plugin for the Reekoh IoT Platform. Integrates a Reekoh instance with a Google Cloud Datastore database to store device data.
-  documentation: README.md
   icon: asset/icon/reekoh200x200.png
   signupLink: https://myservice.com/signup # ??
   type: Storage
@@ -12,33 +11,33 @@ metadata:
     - storage
     - google
     - cloud
-  config:
-    projectId:
-      label: Project Id
-      type: String
-      maxLength: 1000
-      required: true
-      help: "The project ID from the Google Developer's Console e.g. 'purple-grape-123'."
-    clientEmail:
-      label: Email
-      type: String
-      maxLength: 1000
-      required: true
-      help: "The Client Email to use for authentication."
-    privateKey:
-      label: Private Key
-      type: String
-      maxLength: 1000
-      required: true
-      help: "The Private Key to use for authentication."
-    key:
-      label: Key
-      type: String
-      maxLength: 1000
-      required: true
-      help: "Unique ID for an object."
-
+    
   release:
     version: 1.0.0
     notes: path/to/RELEASENOTESv1.0.0.md # ??
-    image: path/to/docker/image # ??
+    documentation: README.md
+    config:
+      projectId:
+        label: Project Id
+        type: String
+        maxLength: 1000
+        required: true
+        help: "The project ID from the Google Developer's Console e.g. 'purple-grape-123'."
+      clientEmail:
+        label: Email
+        type: String
+        maxLength: 1000
+        required: true
+        help: "The Client Email to use for authentication."
+      privateKey:
+        label: Private Key
+        type: String
+        maxLength: 1000
+        required: true
+        help: "The Private Key to use for authentication."
+      key:
+        label: Key
+        type: String
+        maxLength: 1000
+        required: true
+        help: "Unique ID for an object."
